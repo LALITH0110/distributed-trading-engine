@@ -1,0 +1,34 @@
+{
+  "training_cutoff": "2020-02-11T15:59:00Z",
+  "dataset_range": {
+    "start": "2020-01-01T00:00:00Z",
+    "end": "2020-02-11T15:59:00Z"
+  },
+  "dataset_rows": 60000,
+  "data_source": "synthetic_gbm_60k",
+  "feature_windows": {
+    "volatility_ticks": 50,
+    "momentum_ticks": 20,
+    "volume_imbalance_ticks": 20,
+    "spread_ratio": "single_tick_open_close_proxy"
+  },
+  "feature_order": [
+    "volatility",
+    "spread_ratio",
+    "volume_imbalance",
+    "momentum"
+  ],
+  "model": {
+    "type": "HistGradientBoostingClassifier",
+    "max_iter": 10,
+    "max_leaf_nodes": 15,
+    "early_stopping": false,
+    "random_state": 42
+  },
+  "train_accuracy": 0.5381,
+  "test_accuracy": 0.5048,
+  "split": "70/30_chronological",
+  "target": "close[t+10] > close[t]",
+  "sklearn_version": "1.6.1",
+  "notes": "volume_imbalance uses buy/sell split inferred from close>open; bid_size==ask_size in live feed so this feature carries no live signal"
+}

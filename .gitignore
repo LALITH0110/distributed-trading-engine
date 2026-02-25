@@ -1,0 +1,14 @@
+.planning/
+
+# Dataset cache — run scripts/fetch_datasets.py to populate
+data/
+data/*.csv
+
+# Python artifacts
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+dist/
+build/
+.DS_Store

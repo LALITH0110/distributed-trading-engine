@@ -1,0 +1,26 @@
+# Core messaging
+pyzmq>=26.0.0
+protobuf>=5.27.0
+grpcio-tools>=1.62.0
+
+# Config
+PyYAML>=6.0.1
+
+# LOB / hot path
+sortedcontainers==2.4.0
+numpy>=1.26.4
+
+# ML strategy
+scikit-learn>=1.5.0
+
+# Data feeds
+ccxt>=4.3.0
+yfinance>=0.2.40
+
+# Dashboard
+ipywidgets>=8.1.0
+matplotlib>=3.8.0
+ipympl
+
+# Dev / testing
+pytest>=8.0.0

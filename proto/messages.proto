@@ -1,0 +1,107 @@
+syntax = "proto3";
+
+// messages.proto — All inter-node message schemas for the distributed trading engine.
+// FIELD NUMBERS ARE PERMANENT. Never reuse a field number. When removing a field,
+// mark it reserved. schema_version is field 1 in every top-level message.
+// Compiled with: python -m grpc_tools.protoc (NOT apt protoc)
+
+package trading;
+
+// ── Enums ─────────────────────────────────────────────────────────────────────
+// Proto3 rule: zero-value enum entry is mandatory and must be _UNSPECIFIED = 0.
+// Prefix pattern: SIDE_BUY not BUY (avoids proto name collision across messages).
+
+enum Side {
+  SIDE_UNSPECIFIED = 0;
+  SIDE_BUY = 1;
+  SIDE_SELL = 2;
+}
+
+enum OrderType {
+  ORDER_TYPE_UNSPECIFIED = 0;
+  ORDER_TYPE_LIMIT = 1;
+  ORDER_TYPE_MARKET = 2;
+}
+
+enum ExecType {
+  EXEC_TYPE_UNSPECIFIED = 0;
+  EXEC_TYPE_NEW = 1;
+  EXEC_TYPE_FILL = 2;
+  EXEC_TYPE_PARTIAL = 3;
+  EXEC_TYPE_CANCEL = 4;
+  EXEC_TYPE_REJECT = 5;
+}
+
+// ── MSG-02: MarketDataTick ─────────────────────────────────────────────────────
+// Published by feed handler on PUB socket. Prices stored as int64 ticks
+// (integer basis points) — float conversion only at display boundary.
+message MarketDataTick {
+  int32  schema_version = 1;  // PERMANENT: always 1
+  int64  timestamp_ns   = 2;  // nanosecond epoch via time.time_ns()
+  string symbol         = 3;  // e.g. "BTCUSDT"
+  int64  bid            = 4;  // bid price in int64 ticks
+  int64  ask            = 5;  // ask price in int64 ticks
+  int64  bid_size       = 6;  // bid quantity
+  int64  ask_size       = 7;  // ask quantity
+}
+
+// ── MSG-03: NewOrderSingle ─────────────────────────────────────────────────────
+// Sent by strategy nodes via PUSH socket to risk gateway → matching engine.
+message NewOrderSingle {
+  int32     schema_version = 1;  // PERMANENT: always 1
+  string    order_id       = 2;  // unique per session; never reuse
+  string    symbol         = 3;
+  Side      side           = 4;
+  OrderType order_type     = 5;
+  int64     price          = 6;  // int64 ticks; 0 for MARKET orders
+  int64     quantity       = 7;
+  string    strategy_id    = 8;  // used for exec report routing by topic
+}
+
+// ── MSG-04: ExecutionReport ───────────────────────────────────────────────────
+// Published by matching engine PUB socket. Published topic = strategy_id bytes.
+// Fields 10-12 added in Phase 4 for ME routing and observability.
+message ExecutionReport {
+  int32    schema_version = 1;   // PERMANENT: always 1
+  string   exec_id        = 2;   // unique execution event ID
+  string   order_id       = 3;
+  ExecType exec_type      = 4;
+  int64    fill_price     = 5;   // int64 ticks; 0 if not a fill
+  int64    fill_qty       = 6;
+  int64    leaves_qty     = 7;   // remaining open quantity
+  int64    cum_qty        = 8;   // cumulative filled quantity
+  int64    avg_px         = 9;   // volume-weighted average fill price in ticks
+  string   strategy_id   = 10;  // routing topic — strategy_id bytes used as PUB topic
+  string   symbol        = 11;  // asset symbol (e.g. "BTCUSDT")
+  int64    timestamp_ns  = 12;  // time.time_ns() at publish
+}
+
+// ── MSG-05: Heartbeat ─────────────────────────────────────────────────────────
+// Published by every node. Dashboard subscribes to all (topic = b"").
+message Heartbeat {
+  int32  schema_version   = 1;  // PERMANENT: always 1
+  string node_id          = 2;
+  int64  timestamp_ns     = 3;
+  float  cpu_pct          = 4;
+  float  mem_pct          = 5;
+  int64  orders_processed = 6;
+}
+
+// ── MSG-06: KillSwitch ────────────────────────────────────────────────────────
+// Sent by dashboard to risk gateway. Risk gateway rejects all new orders.
+message KillSwitch {
+  int32  schema_version     = 1;  // PERMANENT: always 1
+  int64  trigger_timestamp  = 2;  // time.time_ns() when button pressed
+  string reason             = 3;
+  string operator_id        = 4;
+}
+
+// ── MSG-07: CancelRequest ─────────────────────────────────────────────────────
+// Sent by strategy or risk gateway to matching engine.
+message CancelRequest {
+  int32  schema_version = 1;  // PERMANENT: always 1
+  string order_id       = 2;  // ID of the order to cancel
+  string orig_order_id  = 3;  // original order ID (FIX-lite OrigClOrdID)
+  string symbol         = 4;
+  string strategy_id    = 5;
+}

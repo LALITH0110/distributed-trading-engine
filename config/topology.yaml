@@ -1,0 +1,122 @@
+# topology.yaml — ZeroMQ endpoint configuration for the distributed trading engine.
+# deployment_mode: local  → all hosts resolve to 127.0.0.1 (loopback dev)
+# deployment_mode: fabric → hosts resolved from FABRIC_*_HOST env vars
+#
+# Socket pattern legend:
+#   PUB/SUB: one-to-many broadcast (market data, exec reports, heartbeats)
+#   PUSH/PULL: pipeline / load-balanced point-to-point (order routing)
+#
+# Port assignments (permanent — same as field numbers, never change):
+#   5555: market data feed (PUB)
+#   5556: execution reports (PUB, topic=strategy_id)
+#   5557: heartbeat broadcast (PUB, topic=b"")
+#   5558: order ingress to risk gateway (PUSH from strategies, PULL at risk)
+#   5559: order egress from risk to matching engine (PUSH from risk, PULL at ME)
+#   5560: kill switch command (PUSH from dashboard, PULL at risk gateway)
+#   5561: risk reject pub (PUB from risk gateway, topic=strategy_id for REJECT reports)
+#   5562: order cancel (PULL at ME; risk gateway PUSHes CancelRequest protos)
+
+deployment_mode: local  # change to 'fabric' for FABRIC deployment
+
+hosts:
+  local:
+    feed:            "127.0.0.1"
+    matching_engine: "127.0.0.1"
+    risk_gateway:    "127.0.0.1"
+    dashboard:       "127.0.0.1"
+  fabric:
+    # Overridden by env vars at runtime — see engine/config.py
+    feed:            "${FABRIC_FEED_HOST}"
+    matching_engine: "${FABRIC_ME_HOST}"
+    risk_gateway:    "${FABRIC_RISK_HOST}"
+    dashboard:       "${FABRIC_DASH_HOST}"
+
+endpoints:
+  # MSG-08: PUB/SUB for market data broadcast
+  feed_pub:
+    role: PUB
+    bind_host_key: feed
+    port: 5555
+    description: "Feed handler binds; strategy nodes and dashboard subscribe"
+
+  # MSG-08: PUB/SUB for execution reports (topic = strategy_id bytes)
+  exec_report_pub:
+    role: PUB
+    bind_host_key: matching_engine
+    port: 5556
+    description: "Matching engine binds; strategies subscribe with own strategy_id topic"
+
+  # MSG-05: PUB/SUB for heartbeats (topic = b'' = all)
+  heartbeat_pub:
+    role: PUB
+    bind_host_key: feed
+    port: 5557
+    description: "Feed handler binds; strategy nodes subscribe for connectivity detection (STRAT-07)"
+
+  # MSG-08: PUSH/PULL order routing — strategy → risk gateway
+  order_ingress:
+    role: PULL
+    bind_host_key: risk_gateway
+    port: 5558
+    description: "Risk gateway binds PULL; strategy nodes PUSH orders here"
+
+  # MSG-08: PUSH/PULL order routing — risk gateway → matching engine
+  order_egress:
+    role: PULL
+    bind_host_key: matching_engine
+    port: 5559
+    description: "Matching engine binds PULL; risk gateway PUSHes approved orders"
+
+  # MSG-06: PUSH/PULL kill switch — dashboard → risk gateway
+  kill_switch:
+    role: PULL
+    bind_host_key: risk_gateway
+    port: 5560
+    description: "Risk gateway binds PULL; dashboard PUSHes KillSwitch protobuf"
+
+  # RISK-05: PUB for risk reject reports — risk gateway → strategy nodes
+  risk_reject_pub:
+    role: PUB
+    bind_host_key: risk_gateway
+    port: 5561
+    description: "Risk gateway binds PUB; strategy nodes subscribe to own strategy_id topic for REJECT reports"
+
+  # RISK-06: PULL for cancel requests — ME accepts CancelRequest from risk gateway
+  order_cancel:
+    role: PULL
+    bind_host_key: matching_engine
+    port: 5562
+    description: "Matching engine binds PULL; risk gateway PUSHes CancelRequest protos on kill switch"
+
+  # DASH-01: PUB for matching engine heartbeats — dashboard subscribes
+  me_heartbeat_pub:
+    role: PUB
+    bind_host_key: matching_engine
+    port: 5563
+    description: "Matching engine heartbeat PUB for dashboard"
+
+  # DASH-01: PUB for risk gateway heartbeats — dashboard subscribes
+  rg_heartbeat_pub:
+    role: PUB
+    bind_host_key: risk_gateway
+    port: 5564
+    description: "Risk gateway heartbeat PUB for dashboard"
+
+zmq:
+  linger_ms: 100          # LINGER on all sockets — see engine/zmq_factory.py
+  io_threads: 2           # zmq.Context(io_threads=2) for 10K+ ticks/sec
+  sndhwm: 10000           # sender HWM — prevent silent drop at 1000 default
+  rcvhwm: 10000           # receiver HWM
+  connect_sleep_ms: 100   # sleep after connect() before first recv (slow joiner)
+
+matching_engine:
+  ring_buffer_size: 65536  # deque(maxlen=N) per symbol — ME-03 default
+  orphan_timeout_s: 10.0   # cancel orders from silent strategies after 10s — ME-09
+  gc_interval_s: 5.0       # GC check interval in match loop
+
+risk_gateway:
+  fat_finger_max_notional: 100000   # RISK-01: reject orders > $100K notional
+  position_limit: 10               # RISK-02: max absolute net position per symbol per strategy
+  rate_limit_per_s: 10             # RISK-03: token bucket refill rate (tokens/sec)
+  token_bucket_capacity: 10        # RISK-03: max burst tokens per strategy
+  inbound_rcvhwm: 1000             # RISK-06: risk gateway inbound PULL HWM (overrides zmq.rcvhwm)

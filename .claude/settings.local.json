@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(node /Users/lalith/.claude/get-shit-done/bin/gsd-tools.cjs commit:*)",
+      "WebSearch",
+      "Bash(node:*)",
+      "Bash(python3:*)"
+    ]
+  }
+}
