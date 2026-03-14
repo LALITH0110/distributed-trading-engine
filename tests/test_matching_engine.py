@@ -98,6 +98,16 @@ def _make_test_topology(
                 "bind_host_key": "matching_engine",
                 "port": order_cancel_port,
             },
+            "me_heartbeat_pub": {
+                "role": "PUB",
+                "bind_host_key": "matching_engine",
+                "port": order_cancel_port + 1,
+            },
+            "rg_heartbeat_pub": {
+                "role": "PUB",
+                "bind_host_key": "risk_gateway",
+                "port": order_cancel_port + 2,
+            },
         },
         "zmq": {
             "linger_ms": 0,

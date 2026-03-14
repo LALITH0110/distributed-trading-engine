@@ -47,6 +47,8 @@ _PORTS = {
     "kill_switch":     18005,
     "risk_reject_pub": 18006,
     "order_cancel":    18007,
+    "me_heartbeat_pub": 18008,
+    "rg_heartbeat_pub": 18009,
 }
 
 
@@ -110,6 +112,16 @@ def _make_test_topology(ports: dict) -> dict:
                 "role":          "PULL",
                 "bind_host_key": "matching_engine",
                 "port":          ports["order_cancel"],
+            },
+            "me_heartbeat_pub": {
+                "role":          "PUB",
+                "bind_host_key": "matching_engine",
+                "port":          ports["me_heartbeat_pub"],
+            },
+            "rg_heartbeat_pub": {
+                "role":          "PUB",
+                "bind_host_key": "risk_gateway",
+                "port":          ports["rg_heartbeat_pub"],
             },
         },
         "zmq": {
@@ -335,6 +347,145 @@ class TestStrategyIntegration:
             assert er.fill_qty > 0, f"fill_qty should be > 0, got {er.fill_qty}"
 
 
+# ── Risk Rejection Integration Test ──────────────────────────────────────
+
+_RISK_PORTS = {
+    "feed_pub":        20000,
+    "exec_report_pub": 20001,
+    "heartbeat_pub":   20002,
+    "order_ingress":   20003,
+    "order_egress":    20004,
+    "kill_switch":     20005,
+    "risk_reject_pub": 20006,
+    "order_cancel":    20007,
+    "me_heartbeat_pub": 20008,
+    "rg_heartbeat_pub": 20009,
+}
+
+
+class TestRiskRejectionIntegration:
+    """Phase 9 SC-3: Fat-finger order → RG REJECT, ME never sees the order."""
+
+    @pytest.fixture(scope="class")
+    def risk_pipeline(self, tmp_path_factory):
+        topo_dict = _make_test_topology(_RISK_PORTS)
+        # Low fat-finger limit to trigger rejection easily
+        topo_dict["risk_gateway"]["fat_finger_max_notional"] = 1000
+
+        tmp_dir = tmp_path_factory.mktemp("risk_reject")
+        topo_path = str(tmp_dir / "topology.yaml")
+        with open(topo_path, "w") as f:
+            yaml.safe_dump(topo_dict, f)
+
+        old_env = os.environ.get("ME_TOPOLOGY_PATH")
+        os.environ["ME_TOPOLOGY_PATH"] = topo_path
+
+        me_proc = start_matching_engine(symbols=["BTCUSDT"])
+        rg_proc = start_risk_gateway()
+        time.sleep(0.5)
+
+        ctx = zmq.Context()
+        yield {"ctx": ctx, "topo": topo_dict, "topo_path": topo_path}
+
+        for proc in [rg_proc, me_proc]:
+            if proc.is_alive():
+                proc.terminate()
+        for proc in [rg_proc, me_proc]:
+            proc.join(timeout=2.0)
+        ctx.term()
+
+        if old_env is None:
+            os.environ.pop("ME_TOPOLOGY_PATH", None)
+        else:
+            os.environ["ME_TOPOLOGY_PATH"] = old_env
+
+    def test_fat_finger_rejected_me_never_sees(self, risk_pipeline):
+        """Send fat-finger order (notional > 1000). Expect:
+        1. RG publishes EXEC_TYPE_REJECT on risk_reject_pub
+        2. ME exec_report_pub receives NO reports for this order
+        """
+        ctx = risk_pipeline["ctx"]
+        topo = risk_pipeline["topo"]
+
+        # SUB to risk_reject_pub for REJECT reports
+        reject_sub = ctx.socket(zmq.SUB)
+        reject_sub.setsockopt(zmq.LINGER, 0)
+        reject_sub.setsockopt(zmq.SUBSCRIBE, b"fat-finger-strat")
+        reject_sub.connect(
+            f"tcp://127.0.0.1:{topo['endpoints']['risk_reject_pub']['port']}"
+        )
+
+        # SUB to exec_report_pub to verify ME never sees it
+        me_sub = ctx.socket(zmq.SUB)
+        me_sub.setsockopt(zmq.LINGER, 0)
+        me_sub.setsockopt(zmq.SUBSCRIBE, b"fat-finger-strat")
+        me_sub.connect(
+            f"tcp://127.0.0.1:{topo['endpoints']['exec_report_pub']['port']}"
+        )
+
+        # PUSH to order_ingress (strategy → RG)
+        push = ctx.socket(zmq.PUSH)
+        push.setsockopt(zmq.LINGER, 0)
+        push.connect(
+            f"tcp://127.0.0.1:{topo['endpoints']['order_ingress']['port']}"
+        )
+
+        time.sleep(0.2)  # slow joiner
+
+        # Fat-finger order: price=50000 * qty=10 = 500,000 notional >> 1000 limit
+        from proto.messages_pb2 import NewOrderSingle, Side, OrderType
+        nos = NewOrderSingle()
+        nos.schema_version = 1
+        nos.order_id = "fat-finger-order-001"
+        nos.symbol = "BTCUSDT"
+        nos.side = Side.SIDE_BUY
+        nos.order_type = OrderType.ORDER_TYPE_LIMIT
+        nos.price = 50000
+        nos.quantity = 10
+        nos.strategy_id = "fat-finger-strat"
+        push.send(nos.SerializeToString())
+
+        # Wait for REJECT on risk_reject_pub
+        rejects = []
+        deadline = time.monotonic() + 5.0
+        while time.monotonic() < deadline:
+            try:
+                frames = reject_sub.recv_multipart(flags=zmq.NOBLOCK)
+                er = ExecutionReport()
+                er.ParseFromString(frames[1])
+                if er.exec_type == ExecType.EXEC_TYPE_REJECT:
+                    rejects.append(er)
+                    break
+            except zmq.Again:
+                time.sleep(0.01)
+
+        # Check ME never got this order (no exec reports within 1s)
+        me_reports = []
+        me_deadline = time.monotonic() + 1.0
+        while time.monotonic() < me_deadline:
+            try:
+                frames = me_sub.recv_multipart(flags=zmq.NOBLOCK)
+                er = ExecutionReport()
+                er.ParseFromString(frames[1])
+                me_reports.append(er)
+            except zmq.Again:
+                time.sleep(0.01)
+
+        reject_sub.close()
+        me_sub.close()
+        push.close()
+
+        # Assertions
+        assert len(rejects) == 1, f"Expected 1 REJECT, got {len(rejects)}"
+        assert rejects[0].order_id == "fat-finger-order-001"
+        assert rejects[0].strategy_id == "fat-finger-strat"
+        assert rejects[0].exec_type == ExecType.EXEC_TYPE_REJECT
+
+        assert len(me_reports) == 0, (
+            f"ME should never see fat-finger order, but got {len(me_reports)} reports"
+        )
+
+
 # ── ML integration ports ──────────────────────────────────────────────────────
 
 _ML_PORTS = {
@@ -346,6 +497,8 @@ _ML_PORTS = {
     "kill_switch":     19005,
     "risk_reject_pub": 19006,
     "order_cancel":    19007,
+    "me_heartbeat_pub": 19008,
+    "rg_heartbeat_pub": 19009,
 }
 
 
