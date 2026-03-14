@@ -90,17 +90,32 @@ class Topology:
             raise KeyError(f"No endpoint '{endpoint_key}' in topology.yaml")
         return ep
 
+    def _format_host(self, host: str) -> str:
+        """Wrap IPv6 addresses in brackets for ZMQ URIs."""
+        if ":" in host and not host.startswith("["):
+            return f"[{host}]"
+        return host
+
     def get_bind_addr(self, endpoint_key: str) -> str:
-        """Returns tcp://HOST:PORT for the socket that binds (server side)."""
+        """Returns tcp://HOST:PORT for the socket that binds (server side).
+        In fabric mode, binds to all interfaces (0.0.0.0) instead of a
+        specific IP, since the resolved host is a remote management IP.
+        """
         ep = self._endpoint(endpoint_key)
+        if self.deployment_mode == "fabric":
+            return f"tcp://0.0.0.0:{ep['port']}"
         host = self._resolve_host(ep["bind_host_key"])
         return f"tcp://{host}:{ep['port']}"
 
     def get_connect_addr(self, endpoint_key: str) -> str:
         """Returns tcp://HOST:PORT for sockets that connect (client side).
-        For loopback, bind and connect addresses are identical.
+        In fabric mode, resolves to the remote node's IP (with IPv6 brackets).
+        In local mode, same as bind address.
         """
-        return self.get_bind_addr(endpoint_key)
+        ep = self._endpoint(endpoint_key)
+        host = self._resolve_host(ep["bind_host_key"])
+        host = self._format_host(host)
+        return f"tcp://{host}:{ep['port']}"
 
     def get_port(self, endpoint_key: str) -> int:
         return int(self._endpoint(endpoint_key)["port"])
