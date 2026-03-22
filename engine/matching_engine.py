@@ -64,13 +64,23 @@ def _publish_exec_report(pub, order: Order, exec_type, strategy_id: str,
     pub.send_multipart([strategy_id.encode(), er.SerializeToString()])
 
 
-def _process_order(nos, lob, pub, order_registry: dict) -> None:
+def _process_order(nos, lob, pub, order_registry: dict,
+                   _arrival_ns=None, _latencies=None, _fill_count=None) -> None:
     """Convert NOS -> Order, submit to LOB, publish exec reports."""
     from proto.messages_pb2 import ExecType  # noqa: PLC0415
     order = _nos_to_order(nos)
     sid = order_registry.get(nos.order_id, nos.strategy_id)
+
+    # ── Latency measurement ────────────────────────────────────────────────────
+    if _arrival_ns is not None and _latencies is not None:
+        t_recv = _arrival_ns.pop(nos.order_id, None)
+        if t_recv is not None:
+            _latencies.append(time.time_ns() - t_recv)
+
     fills = lob.submit(order)
     if fills:
+        if _fill_count is not None:
+            _fill_count[0] += len(fills)
         for resting_id, incoming_id, fill_qty, fill_price in fills:
             # Resolve each order object and publish exec report
             resting_order = lob._order_map.get(resting_id)
@@ -114,7 +124,8 @@ def _run_orphan_gc(lobs: dict, pub, order_registry: dict,
 
 def _match_loop(lobs: dict, ring_bufs: dict, pub, order_registry: dict,
                 strategy_last_seen: dict, symbols: list[str], topo, stop,
-                me_hb_pub=None) -> None:
+                me_hb_pub=None, _arrival_ns=None, _latencies=None,
+                _fill_count=None, _orders_proc=None) -> None:
     """Round-robin drain ring buffers, run GC periodically."""
     from proto.messages_pb2 import Heartbeat  # noqa: PLC0415
     orphan_timeout_ns = int(topo.me.orphan_timeout_s * 1e9)
@@ -133,7 +144,10 @@ def _match_loop(lobs: dict, ring_bufs: dict, pub, order_registry: dict,
                 nos = rb.popleft()
                 any_work = True
                 _total_orders_processed += 1
-                _process_order(nos, lob, pub, order_registry)
+                if _orders_proc is not None:
+                    _orders_proc[0] += 1
+                _process_order(nos, lob, pub, order_registry,
+                               _arrival_ns, _latencies, _fill_count)
 
         now = time.time_ns()
         if now - last_gc_ns >= gc_interval_ns:
@@ -188,6 +202,13 @@ def _matching_engine_target(symbols: list[str]) -> None:
     order_registry: dict[str, str] = {}      # order_id -> strategy_id
     strategy_last_seen: dict[str, int] = {}  # strategy_id -> timestamp_ns
 
+    # ── Metrics state ──────────────────────────────────────────────────────────
+    _arrival_ns: dict[str, int] = {}          # order_id -> recv timestamp (ns)
+    _latencies: deque = deque(maxlen=200_000)  # per-order latency samples (ns)
+    _fill_count: list[int] = [0]
+    _orders_proc: list[int] = [0]
+    _start_ns: list[int] = [time.time_ns()]
+
     stop = threading.Event()
 
     def _sigterm_handler(signum, frame):
@@ -201,6 +222,7 @@ def _matching_engine_target(symbols: list[str]) -> None:
                 raw = pull.recv()
                 nos = NewOrderSingle()
                 nos.ParseFromString(raw)
+                _arrival_ns[nos.order_id] = time.time_ns()
                 order_registry[nos.order_id] = nos.strategy_id
                 strategy_last_seen[nos.strategy_id] = time.time_ns()
                 ring_bufs[nos.symbol].append(nos)
@@ -239,13 +261,41 @@ def _matching_engine_target(symbols: list[str]) -> None:
     try:
         _match_loop(lobs, ring_bufs, pub, order_registry,
                     strategy_last_seen, symbols, topo, stop,
-                    me_hb_pub=me_hb_pub)
+                    me_hb_pub=me_hb_pub,
+                    _arrival_ns=_arrival_ns, _latencies=_latencies,
+                    _fill_count=_fill_count, _orders_proc=_orders_proc)
     finally:
         pull.close()          # unblocks recv thread (raises ContextTerminated)
         cancel_pull.close()   # unblocks cancel recv thread
         pub.close()
         me_hb_pub.close()
         ctx.term()     # completes in < 1ms with LINGER=100ms
+
+        # ── Print benchmark metrics ────────────────────────────────────────────
+        elapsed_s = (time.time_ns() - _start_ns[0]) / 1e9
+        n_orders = _orders_proc[0]
+        n_fills = _fill_count[0]
+        if n_orders > 0 and elapsed_s > 0:
+            throughput = n_orders / elapsed_s
+            if _latencies:
+                lats_us = sorted(l / 1_000 for l in _latencies)
+                n = len(lats_us)
+                def _pct(p):
+                    return lats_us[min(int(n * p / 100), n - 1)]
+                p50  = _pct(50)
+                p95  = _pct(95)
+                p99  = _pct(99)
+                p999 = _pct(99.9)
+            else:
+                p50 = p95 = p99 = p999 = 0.0
+            print(
+                f"METRICS: orders={n_orders} fills={n_fills} "
+                f"elapsed_s={elapsed_s:.2f} "
+                f"throughput={throughput:.1f} orders/sec "
+                f"latency p50={p50:.1f}us p95={p95:.1f}us "
+                f"p99={p99:.1f}us p999={p999:.1f}us",
+                flush=True,
+            )
 
 
 # ── Public API ─────────────────────────────────────────────────────────────────
