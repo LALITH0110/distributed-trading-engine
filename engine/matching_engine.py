@@ -265,13 +265,7 @@ def _matching_engine_target(symbols: list[str]) -> None:
                     _arrival_ns=_arrival_ns, _latencies=_latencies,
                     _fill_count=_fill_count, _orders_proc=_orders_proc)
     finally:
-        pull.close()          # unblocks recv thread (raises ContextTerminated)
-        cancel_pull.close()   # unblocks cancel recv thread
-        pub.close()
-        me_hb_pub.close()
-        ctx.term()     # completes in < 1ms with LINGER=100ms
-
-        # ── Print benchmark metrics ────────────────────────────────────────────
+        # ── Print metrics FIRST — ctx.term() may abort at C level ─────────────
         elapsed_s = (time.time_ns() - _start_ns[0]) / 1e9
         n_orders = _orders_proc[0]
         n_fills = _fill_count[0]
@@ -296,6 +290,15 @@ def _matching_engine_target(symbols: list[str]) -> None:
                 f"p99={p99:.1f}us p999={p999:.1f}us",
                 flush=True,
             )
+
+        pull.close()          # unblocks recv thread (raises ContextTerminated)
+        cancel_pull.close()   # unblocks cancel recv thread
+        pub.close()
+        me_hb_pub.close()
+        try:
+            ctx.term()        # may hit ZMQ C-level assert — metrics already printed
+        except Exception:
+            pass
 
 
 # ── Public API ─────────────────────────────────────────────────────────────────
