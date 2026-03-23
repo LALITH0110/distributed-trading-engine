@@ -265,7 +265,8 @@ def _matching_engine_target(symbols: list[str]) -> None:
                     _arrival_ns=_arrival_ns, _latencies=_latencies,
                     _fill_count=_fill_count, _orders_proc=_orders_proc)
     finally:
-        # ── Print metrics FIRST — ctx.term() may abort at C level ─────────────
+        # ── Write metrics to file FIRST — ctx.term() may C-abort afterward ─────
+        import json as _json
         elapsed_s = (time.time_ns() - _start_ns[0]) / 1e9
         n_orders = _orders_proc[0]
         n_fills = _fill_count[0]
@@ -273,30 +274,35 @@ def _matching_engine_target(symbols: list[str]) -> None:
             throughput = n_orders / elapsed_s
             if _latencies:
                 lats_us = sorted(l / 1_000 for l in _latencies)
-                n = len(lats_us)
+                _n = len(lats_us)
                 def _pct(p):
-                    return lats_us[min(int(n * p / 100), n - 1)]
+                    return lats_us[min(int(_n * p / 100), _n - 1)]
                 p50  = _pct(50)
                 p95  = _pct(95)
                 p99  = _pct(99)
                 p999 = _pct(99.9)
             else:
                 p50 = p95 = p99 = p999 = 0.0
-            print(
-                f"METRICS: orders={n_orders} fills={n_fills} "
-                f"elapsed_s={elapsed_s:.2f} "
-                f"throughput={throughput:.1f} orders/sec "
-                f"latency p50={p50:.1f}us p95={p95:.1f}us "
-                f"p99={p99:.1f}us p999={p999:.1f}us",
-                flush=True,
-            )
+            metrics = {
+                "orders": n_orders, "fills": n_fills,
+                "elapsed_s": round(elapsed_s, 2),
+                "throughput": round(throughput, 1),
+                "p50_us": round(p50, 1), "p95_us": round(p95, 1),
+                "p99_us": round(p99, 1), "p999_us": round(p999, 1),
+            }
+            try:
+                with open("/tmp/me_metrics.json", "w") as _f:
+                    _json.dump(metrics, _f)
+                    _f.flush()
+            except Exception:
+                pass
 
         pull.close()          # unblocks recv thread (raises ContextTerminated)
         cancel_pull.close()   # unblocks cancel recv thread
         pub.close()
         me_hb_pub.close()
         try:
-            ctx.term()        # may hit ZMQ C-level assert — metrics already printed
+            ctx.term()        # may hit ZMQ C-level assert — metrics already saved
         except Exception:
             pass
 
