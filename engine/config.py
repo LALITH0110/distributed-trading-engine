@@ -103,7 +103,7 @@ class Topology:
         """
         ep = self._endpoint(endpoint_key)
         if self.deployment_mode == "fabric":
-            return f"tcp://[::]:{ep['port']}"
+            return f"tcp://0.0.0.0:{ep['port']}"
         host = self._resolve_host(ep["bind_host_key"])
         return f"tcp://{host}:{ep['port']}"
 
