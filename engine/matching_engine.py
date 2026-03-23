@@ -216,6 +216,43 @@ def _matching_engine_target(symbols: list[str]) -> None:
 
     signal.signal(signal.SIGTERM, _sigterm_handler)
 
+    def _metrics_writer():
+        """Write metrics snapshot to file every 5s so it survives process abort."""
+        import json as _json
+        while not stop.wait(timeout=5.0):
+            _flush_metrics(_json)
+        _flush_metrics(_json)  # final flush on clean stop
+
+    def _flush_metrics(_json):
+        elapsed_s = (time.time_ns() - _start_ns[0]) / 1e9
+        n_orders = _orders_proc[0]
+        n_fills = _fill_count[0]
+        if n_orders == 0 or elapsed_s <= 0:
+            return
+        throughput = n_orders / elapsed_s
+        if _latencies:
+            lats_us = sorted(l / 1_000 for l in _latencies)
+            _n = len(lats_us)
+            def _pct(p): return lats_us[min(int(_n * p / 100), _n - 1)]
+            p50, p95, p99, p999 = _pct(50), _pct(95), _pct(99), _pct(99.9)
+        else:
+            p50 = p95 = p99 = p999 = 0.0
+        try:
+            with open("/tmp/me_metrics.json", "w") as _f:
+                _json.dump({
+                    "orders": n_orders, "fills": n_fills,
+                    "elapsed_s": round(elapsed_s, 2),
+                    "throughput": round(throughput, 1),
+                    "p50_us": round(p50, 1), "p95_us": round(p95, 1),
+                    "p99_us": round(p99, 1), "p999_us": round(p999, 1),
+                }, _f)
+                _f.flush()
+        except Exception:
+            pass
+
+    metrics_thread = threading.Thread(target=_metrics_writer, daemon=True)
+    metrics_thread.start()
+
     def recv_loop():
         while not stop.is_set():
             try:
@@ -265,44 +302,12 @@ def _matching_engine_target(symbols: list[str]) -> None:
                     _arrival_ns=_arrival_ns, _latencies=_latencies,
                     _fill_count=_fill_count, _orders_proc=_orders_proc)
     finally:
-        # ── Write metrics to file FIRST — ctx.term() may C-abort afterward ─────
-        import json as _json
-        elapsed_s = (time.time_ns() - _start_ns[0]) / 1e9
-        n_orders = _orders_proc[0]
-        n_fills = _fill_count[0]
-        if n_orders > 0 and elapsed_s > 0:
-            throughput = n_orders / elapsed_s
-            if _latencies:
-                lats_us = sorted(l / 1_000 for l in _latencies)
-                _n = len(lats_us)
-                def _pct(p):
-                    return lats_us[min(int(_n * p / 100), _n - 1)]
-                p50  = _pct(50)
-                p95  = _pct(95)
-                p99  = _pct(99)
-                p999 = _pct(99.9)
-            else:
-                p50 = p95 = p99 = p999 = 0.0
-            metrics = {
-                "orders": n_orders, "fills": n_fills,
-                "elapsed_s": round(elapsed_s, 2),
-                "throughput": round(throughput, 1),
-                "p50_us": round(p50, 1), "p95_us": round(p95, 1),
-                "p99_us": round(p99, 1), "p999_us": round(p999, 1),
-            }
-            try:
-                with open("/tmp/me_metrics.json", "w") as _f:
-                    _json.dump(metrics, _f)
-                    _f.flush()
-            except Exception:
-                pass
-
         pull.close()          # unblocks recv thread (raises ContextTerminated)
         cancel_pull.close()   # unblocks cancel recv thread
         pub.close()
         me_hb_pub.close()
         try:
-            ctx.term()        # may hit ZMQ C-level assert — metrics already saved
+            ctx.term()        # may hit ZMQ C-level assert — metrics saved by writer thread
         except Exception:
             pass
 
