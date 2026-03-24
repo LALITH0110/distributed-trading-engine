@@ -24,11 +24,10 @@ from engine.config import Topology
 
 
 def _apply_defaults(sock: zmq.Socket, topo: Topology) -> zmq.Socket:
-    """Apply LINGER, HWM, and IPV6 to every socket — no exceptions."""
+    """Apply LINGER and HWM to every socket. IPV6 not set (data-plane is IPv4)."""
     sock.setsockopt(zmq.LINGER, topo.zmq.linger_ms)
     sock.setsockopt(zmq.SNDHWM, topo.zmq.sndhwm)
     sock.setsockopt(zmq.RCVHWM, topo.zmq.rcvhwm)
-    sock.setsockopt(zmq.IPV6, 1)  # required for FABRIC (IPv6-only nodes)
     return sock
 
 
