@@ -37,10 +37,16 @@ HEARTBEAT_INTERVAL = 1000   # emit Heartbeat every N ticks
 # ── Internal emit loops ────────────────────────────────────────────────────────
 
 def _run_gbm_loop(pub, topo, hb_pub) -> None:
-    """Emit MarketDataTick at ~10K ticks/sec (2K per symbol), rate-gated."""
+    """Emit MarketDataTick at ~10K ticks/sec (2K per symbol), GBM price walk."""
+    import random
     from proto.messages_pb2 import Heartbeat  # noqa: PLC0415 — post-fork import
     interval_ns = 1_000_000_000 // _TOTAL_RATE   # ns between ticks overall
     slot_ns     = interval_ns // _N_SYMBOLS       # ns per per-symbol slot
+
+    # GBM parameters: mu=0 (drift-free), sigma=0.0002 per tick (~2bps)
+    _sigma = 0.0002
+    _gauss = random.gauss
+    prices = list(BASE_PRICES)  # mutable copy for random walk
 
     tick = MarketDataTick()
     tick.schema_version = 1
@@ -56,9 +62,11 @@ def _run_gbm_loop(pub, topo, hb_pub) -> None:
             time.sleep(wait / 1e9)
 
         idx = i % _N_SYMBOLS
+        # GBM step: dS = S * sigma * N(0,1)
+        prices[idx] *= (1.0 + _sigma * _gauss(0, 1))
         tick.timestamp_ns = time.time_ns()
         tick.symbol        = SYMBOLS[idx]
-        tick.bid           = int(BASE_PRICES[idx] * 100)
+        tick.bid           = int(prices[idx] * 100)
         tick.ask           = tick.bid + 100   # 1.00 spread in hundredths
         pub.send(tick.SerializeToString())
 
@@ -75,7 +83,13 @@ def _run_gbm_loop(pub, topo, hb_pub) -> None:
 
 def _run_stress_loop(pub, topo, hb_pub) -> None:
     """Emit MarketDataTick as fast as possible — no sleep, no rate gate."""
+    import random
     from proto.messages_pb2 import Heartbeat  # noqa: PLC0415 — post-fork import
+
+    _sigma = 0.0002
+    _gauss = random.gauss
+    prices = list(BASE_PRICES)
+
     tick = MarketDataTick()
     tick.schema_version = 1
     tick.bid_size = 1
@@ -84,9 +98,10 @@ def _run_stress_loop(pub, topo, hb_pub) -> None:
     i = 0
     while True:
         idx = i % _N_SYMBOLS
+        prices[idx] *= (1.0 + _sigma * _gauss(0, 1))
         tick.timestamp_ns = time.time_ns()
         tick.symbol        = SYMBOLS[idx]
-        tick.bid           = int(BASE_PRICES[idx] * 100)
+        tick.bid           = int(prices[idx] * 100)
         tick.ask           = tick.bid + 100
         pub.send(tick.SerializeToString())
 

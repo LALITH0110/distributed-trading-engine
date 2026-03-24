@@ -227,9 +227,9 @@ def _matching_engine_target(symbols: list[str]) -> None:
         elapsed_s = (time.time_ns() - _start_ns[0]) / 1e9
         n_orders = _orders_proc[0]
         n_fills = _fill_count[0]
-        if n_orders == 0 or elapsed_s <= 0:
+        if elapsed_s <= 0:
             return
-        throughput = n_orders / elapsed_s
+        throughput = n_orders / elapsed_s if n_orders > 0 else 0.0
         if _latencies:
             lats_us = sorted(l / 1_000 for l in _latencies)
             _n = len(lats_us)
