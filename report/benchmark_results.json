@@ -1,0 +1,675 @@
+{
+  "gbm": {
+    "1": [
+      {
+        "scenario": "gbm",
+        "n_nodes": 1,
+        "trial": 1,
+        "elapsed_s": 51.9,
+        "metrics": "orders=4067 fills=2 throughput=90.3 orders/sec latency p50=88.7us p95=184.5us p99=2194.1us p999=3381.0us",
+        "metrics_raw": {
+          "orders": 4067,
+          "fills": 2,
+          "elapsed_s": 45.02,
+          "throughput": 90.3,
+          "p50_us": 88.7,
+          "p95_us": 184.5,
+          "p99_us": 2194.1,
+          "p999_us": 3381.0
+        }
+      },
+      {
+        "scenario": "gbm",
+        "n_nodes": 1,
+        "trial": 2,
+        "elapsed_s": 52.0,
+        "metrics": "orders=3431 fills=0 throughput=85.8 orders/sec latency p50=87.3us p95=167.1us p99=195.9us p999=762.4us",
+        "metrics_raw": {
+          "orders": 3431,
+          "fills": 0,
+          "elapsed_s": 40.01,
+          "throughput": 85.8,
+          "p50_us": 87.3,
+          "p95_us": 167.1,
+          "p99_us": 195.9,
+          "p999_us": 762.4
+        }
+      },
+      {
+        "scenario": "gbm",
+        "n_nodes": 1,
+        "trial": 3,
+        "elapsed_s": 52.1,
+        "metrics": "orders=3939 fills=0 throughput=87.6 orders/sec latency p50=94.2us p95=168.1us p99=200.2us p999=316.2us",
+        "metrics_raw": {
+          "orders": 3939,
+          "fills": 0,
+          "elapsed_s": 44.96,
+          "throughput": 87.6,
+          "p50_us": 94.2,
+          "p95_us": 168.1,
+          "p99_us": 200.2,
+          "p999_us": 316.2
+        }
+      },
+      {
+        "scenario": "gbm",
+        "n_nodes": 1,
+        "trial": 4,
+        "elapsed_s": 52.0,
+        "metrics": "orders=3939 fills=0 throughput=87.6 orders/sec latency p50=91.9us p95=166.8us p99=187.7us p999=232.1us",
+        "metrics_raw": {
+          "orders": 3939,
+          "fills": 0,
+          "elapsed_s": 44.96,
+          "throughput": 87.6,
+          "p50_us": 91.9,
+          "p95_us": 166.8,
+          "p99_us": 187.7,
+          "p999_us": 232.1
+        }
+      },
+      {
+        "scenario": "gbm",
+        "n_nodes": 1,
+        "trial": 5,
+        "elapsed_s": 51.9,
+        "metrics": "orders=3945 fills=0 throughput=87.7 orders/sec latency p50=85.2us p95=164.2us p99=181.7us p999=415.0us",
+        "metrics_raw": {
+          "orders": 3945,
+          "fills": 0,
+          "elapsed_s": 44.97,
+          "throughput": 87.7,
+          "p50_us": 85.2,
+          "p95_us": 164.2,
+          "p99_us": 181.7,
+          "p999_us": 415.0
+        }
+      }
+    ],
+    "2": [
+      {
+        "scenario": "gbm",
+        "n_nodes": 2,
+        "trial": 1,
+        "elapsed_s": 52.9,
+        "metrics": "orders=942 fills=300 throughput=20.9 orders/sec latency p50=98.8us p95=166.7us p99=181.0us p999=246.2us",
+        "metrics_raw": {
+          "orders": 942,
+          "fills": 300,
+          "elapsed_s": 44.97,
+          "throughput": 20.9,
+          "p50_us": 98.8,
+          "p95_us": 166.7,
+          "p99_us": 181.0,
+          "p999_us": 246.2
+        }
+      },
+      {
+        "scenario": "gbm",
+        "n_nodes": 2,
+        "trial": 2,
+        "elapsed_s": 53.1,
+        "metrics": "orders=946 fills=300 throughput=21.0 orders/sec latency p50=84.6us p95=172.2us p99=191.6us p999=387.3us",
+        "metrics_raw": {
+          "orders": 946,
+          "fills": 300,
+          "elapsed_s": 44.97,
+          "throughput": 21.0,
+          "p50_us": 84.6,
+          "p95_us": 172.2,
+          "p99_us": 191.6,
+          "p999_us": 387.3
+        }
+      },
+      {
+        "scenario": "gbm",
+        "n_nodes": 2,
+        "trial": 3,
+        "elapsed_s": 53.1,
+        "metrics": "orders=897 fills=300 throughput=19.9 orders/sec latency p50=86.0us p95=188.7us p99=847.5us p999=1928.0us",
+        "metrics_raw": {
+          "orders": 897,
+          "fills": 300,
+          "elapsed_s": 44.96,
+          "throughput": 19.9,
+          "p50_us": 86.0,
+          "p95_us": 188.7,
+          "p99_us": 847.5,
+          "p999_us": 1928.0
+        }
+      },
+      {
+        "scenario": "gbm",
+        "n_nodes": 2,
+        "trial": 4,
+        "elapsed_s": 53.1,
+        "metrics": "orders=1070 fills=300 throughput=23.8 orders/sec latency p50=86.8us p95=177.1us p99=228.8us p999=2542.1us",
+        "metrics_raw": {
+          "orders": 1070,
+          "fills": 300,
+          "elapsed_s": 44.97,
+          "throughput": 23.8,
+          "p50_us": 86.8,
+          "p95_us": 177.1,
+          "p99_us": 228.8,
+          "p999_us": 2542.1
+        }
+      },
+      {
+        "scenario": "gbm",
+        "n_nodes": 2,
+        "trial": 5,
+        "elapsed_s": 53.0,
+        "metrics": "orders=928 fills=300 throughput=20.6 orders/sec latency p50=100.0us p95=167.2us p99=195.8us p999=3843.5us",
+        "metrics_raw": {
+          "orders": 928,
+          "fills": 300,
+          "elapsed_s": 44.97,
+          "throughput": 20.6,
+          "p50_us": 100.0,
+          "p95_us": 167.2,
+          "p99_us": 195.8,
+          "p999_us": 3843.5
+        }
+      }
+    ],
+    "4": [
+      {
+        "scenario": "gbm",
+        "n_nodes": 4,
+        "trial": 1,
+        "elapsed_s": 55.1,
+        "metrics": "orders=7951 fills=301 throughput=176.8 orders/sec latency p50=85.7us p95=168.8us p99=188.0us p999=315.1us",
+        "metrics_raw": {
+          "orders": 7951,
+          "fills": 301,
+          "elapsed_s": 44.97,
+          "throughput": 176.8,
+          "p50_us": 85.7,
+          "p95_us": 168.8,
+          "p99_us": 188.0,
+          "p999_us": 315.1
+        }
+      },
+      {
+        "scenario": "gbm",
+        "n_nodes": 4,
+        "trial": 2,
+        "elapsed_s": 55.3,
+        "metrics": "orders=6951 fills=300 throughput=173.7 orders/sec latency p50=81.5us p95=174.3us p99=197.9us p999=291.4us",
+        "metrics_raw": {
+          "orders": 6951,
+          "fills": 300,
+          "elapsed_s": 40.01,
+          "throughput": 173.7,
+          "p50_us": 81.5,
+          "p95_us": 174.3,
+          "p99_us": 197.9,
+          "p999_us": 291.4
+        }
+      },
+      {
+        "scenario": "gbm",
+        "n_nodes": 4,
+        "trial": 3,
+        "elapsed_s": 55.2,
+        "metrics": "orders=7979 fills=305 throughput=177.4 orders/sec latency p50=85.8us p95=172.5us p99=203.3us p999=344.2us",
+        "metrics_raw": {
+          "orders": 7979,
+          "fills": 305,
+          "elapsed_s": 44.97,
+          "throughput": 177.4,
+          "p50_us": 85.8,
+          "p95_us": 172.5,
+          "p99_us": 203.3,
+          "p999_us": 344.2
+        }
+      },
+      {
+        "scenario": "gbm",
+        "n_nodes": 4,
+        "trial": 4,
+        "elapsed_s": 55.3,
+        "metrics": "orders=8088 fills=375 throughput=179.9 orders/sec latency p50=81.9us p95=172.3us p99=423.1us p999=1482.2us",
+        "metrics_raw": {
+          "orders": 8088,
+          "fills": 375,
+          "elapsed_s": 44.97,
+          "throughput": 179.9,
+          "p50_us": 81.9,
+          "p95_us": 172.3,
+          "p99_us": 423.1,
+          "p999_us": 1482.2
+        }
+      },
+      {
+        "scenario": "gbm",
+        "n_nodes": 4,
+        "trial": 5,
+        "elapsed_s": 55.3,
+        "metrics": "orders=7997 fills=333 throughput=177.7 orders/sec latency p50=83.9us p95=169.7us p99=190.4us p999=266.3us",
+        "metrics_raw": {
+          "orders": 7997,
+          "fills": 333,
+          "elapsed_s": 45.01,
+          "throughput": 177.7,
+          "p50_us": 83.9,
+          "p95_us": 169.7,
+          "p99_us": 190.4,
+          "p999_us": 266.3
+        }
+      }
+    ],
+    "8": [
+      {
+        "scenario": "gbm",
+        "n_nodes": 8,
+        "trial": 1,
+        "elapsed_s": 59.4,
+        "metrics": "orders=9768 fills=701 throughput=217.2 orders/sec latency p50=93.9us p95=177.7us p99=239.1us p999=164303.2us",
+        "metrics_raw": {
+          "orders": 9768,
+          "fills": 701,
+          "elapsed_s": 44.97,
+          "throughput": 217.2,
+          "p50_us": 93.9,
+          "p95_us": 177.7,
+          "p99_us": 239.1,
+          "p999_us": 164303.2
+        }
+      },
+      {
+        "scenario": "gbm",
+        "n_nodes": 8,
+        "trial": 2,
+        "elapsed_s": 59.5,
+        "metrics": "orders=11881 fills=724 throughput=264.2 orders/sec latency p50=89.0us p95=180.9us p99=12744.6us p999=22695.3us",
+        "metrics_raw": {
+          "orders": 11881,
+          "fills": 724,
+          "elapsed_s": 44.96,
+          "throughput": 264.2,
+          "p50_us": 89.0,
+          "p95_us": 180.9,
+          "p99_us": 12744.6,
+          "p999_us": 22695.3
+        }
+      },
+      {
+        "scenario": "gbm",
+        "n_nodes": 8,
+        "trial": 3,
+        "elapsed_s": 59.6,
+        "metrics": "orders=11691 fills=603 throughput=259.9 orders/sec latency p50=93.8us p95=185.9us p99=4841.6us p999=7603.6us",
+        "metrics_raw": {
+          "orders": 11691,
+          "fills": 603,
+          "elapsed_s": 44.98,
+          "throughput": 259.9,
+          "p50_us": 93.8,
+          "p95_us": 185.9,
+          "p99_us": 4841.6,
+          "p999_us": 7603.6
+        }
+      },
+      {
+        "scenario": "gbm",
+        "n_nodes": 8,
+        "trial": 4,
+        "elapsed_s": 59.3,
+        "metrics": "orders=8746 fills=618 throughput=194.5 orders/sec latency p50=87.5us p95=190.7us p99=11644.6us p999=18639.5us",
+        "metrics_raw": {
+          "orders": 8746,
+          "fills": 618,
+          "elapsed_s": 44.97,
+          "throughput": 194.5,
+          "p50_us": 87.5,
+          "p95_us": 190.7,
+          "p99_us": 11644.6,
+          "p999_us": 18639.5
+        }
+      },
+      {
+        "scenario": "gbm",
+        "n_nodes": 8,
+        "trial": 5,
+        "elapsed_s": 59.3,
+        "metrics": "orders=8726 fills=605 throughput=194.0 orders/sec latency p50=89.8us p95=182.5us p99=13951.5us p999=19858.2us",
+        "metrics_raw": {
+          "orders": 8726,
+          "fills": 605,
+          "elapsed_s": 44.97,
+          "throughput": 194.0,
+          "p50_us": 89.8,
+          "p95_us": 182.5,
+          "p99_us": 13951.5,
+          "p999_us": 19858.2
+        }
+      }
+    ]
+  },
+  "stress": {
+    "1": [
+      {
+        "scenario": "stress",
+        "n_nodes": 1,
+        "trial": 1,
+        "elapsed_s": 52.2,
+        "metrics": "orders=4161 fills=87 throughput=92.5 orders/sec latency p50=95.7us p95=1290.7us p99=17210.1us p999=21865.8us",
+        "metrics_raw": {
+          "orders": 4161,
+          "fills": 87,
+          "elapsed_s": 44.97,
+          "throughput": 92.5,
+          "p50_us": 95.7,
+          "p95_us": 1290.7,
+          "p99_us": 17210.1,
+          "p999_us": 21865.8
+        }
+      },
+      {
+        "scenario": "stress",
+        "n_nodes": 1,
+        "trial": 2,
+        "elapsed_s": 52.1,
+        "metrics": "orders=3945 fills=0 throughput=87.7 orders/sec latency p50=89.3us p95=168.3us p99=199.6us p999=274.3us",
+        "metrics_raw": {
+          "orders": 3945,
+          "fills": 0,
+          "elapsed_s": 44.97,
+          "throughput": 87.7,
+          "p50_us": 89.3,
+          "p95_us": 168.3,
+          "p99_us": 199.6,
+          "p999_us": 274.3
+        }
+      },
+      {
+        "scenario": "stress",
+        "n_nodes": 1,
+        "trial": 3,
+        "elapsed_s": 53.2,
+        "metrics": "orders=3846 fills=0 throughput=85.5 orders/sec latency p50=86.3us p95=164.1us p99=176.0us p999=239.7us",
+        "metrics_raw": {
+          "orders": 3846,
+          "fills": 0,
+          "elapsed_s": 44.98,
+          "throughput": 85.5,
+          "p50_us": 86.3,
+          "p95_us": 164.1,
+          "p99_us": 176.0,
+          "p999_us": 239.7
+        }
+      },
+      {
+        "scenario": "stress",
+        "n_nodes": 1,
+        "trial": 4,
+        "elapsed_s": 52.0,
+        "metrics": "orders=3948 fills=0 throughput=87.8 orders/sec latency p50=89.9us p95=164.2us p99=177.3us p999=263.6us",
+        "metrics_raw": {
+          "orders": 3948,
+          "fills": 0,
+          "elapsed_s": 44.99,
+          "throughput": 87.8,
+          "p50_us": 89.9,
+          "p95_us": 164.2,
+          "p99_us": 177.3,
+          "p999_us": 263.6
+        }
+      },
+      {
+        "scenario": "stress",
+        "n_nodes": 1,
+        "trial": 5,
+        "elapsed_s": 51.8,
+        "metrics": "orders=3947 fills=0 throughput=87.8 orders/sec latency p50=88.0us p95=167.1us p99=193.0us p999=274.6us",
+        "metrics_raw": {
+          "orders": 3947,
+          "fills": 0,
+          "elapsed_s": 44.97,
+          "throughput": 87.8,
+          "p50_us": 88.0,
+          "p95_us": 167.1,
+          "p99_us": 193.0,
+          "p999_us": 274.6
+        }
+      }
+    ],
+    "2": [
+      {
+        "scenario": "stress",
+        "n_nodes": 2,
+        "trial": 1,
+        "elapsed_s": 53.0,
+        "metrics": "orders=726 fills=300 throughput=16.1 orders/sec latency p50=87.1us p95=171.6us p99=201.2us p999=325.9us",
+        "metrics_raw": {
+          "orders": 726,
+          "fills": 300,
+          "elapsed_s": 44.97,
+          "throughput": 16.1,
+          "p50_us": 87.1,
+          "p95_us": 171.6,
+          "p99_us": 201.2,
+          "p999_us": 325.9
+        }
+      },
+      {
+        "scenario": "stress",
+        "n_nodes": 2,
+        "trial": 2,
+        "elapsed_s": 53.1,
+        "metrics": "orders=1044 fills=300 throughput=23.2 orders/sec latency p50=79.7us p95=168.9us p99=232.2us p999=475.5us",
+        "metrics_raw": {
+          "orders": 1044,
+          "fills": 300,
+          "elapsed_s": 45.05,
+          "throughput": 23.2,
+          "p50_us": 79.7,
+          "p95_us": 168.9,
+          "p99_us": 232.2,
+          "p999_us": 475.5
+        }
+      },
+      {
+        "scenario": "stress",
+        "n_nodes": 2,
+        "trial": 3,
+        "elapsed_s": 53.1,
+        "metrics": "orders=1097 fills=300 throughput=24.4 orders/sec latency p50=86.1us p95=169.3us p99=196.0us p999=379.5us",
+        "metrics_raw": {
+          "orders": 1097,
+          "fills": 300,
+          "elapsed_s": 44.97,
+          "throughput": 24.4,
+          "p50_us": 86.1,
+          "p95_us": 169.3,
+          "p99_us": 196.0,
+          "p999_us": 379.5
+        }
+      },
+      {
+        "scenario": "stress",
+        "n_nodes": 2,
+        "trial": 4,
+        "elapsed_s": 53.2,
+        "metrics": "orders=1443 fills=300 throughput=32.1 orders/sec latency p50=85.4us p95=181.6us p99=281.1us p999=611.5us",
+        "metrics_raw": {
+          "orders": 1443,
+          "fills": 300,
+          "elapsed_s": 44.97,
+          "throughput": 32.1,
+          "p50_us": 85.4,
+          "p95_us": 181.6,
+          "p99_us": 281.1,
+          "p999_us": 611.5
+        }
+      },
+      {
+        "scenario": "stress",
+        "n_nodes": 2,
+        "trial": 5,
+        "elapsed_s": 53.7,
+        "metrics": "",
+        "metrics_raw": {}
+      }
+    ],
+    "4": [
+      {
+        "scenario": "stress",
+        "n_nodes": 4,
+        "trial": 1,
+        "elapsed_s": 55.3,
+        "metrics": "orders=8235 fills=492 throughput=183.4 orders/sec latency p50=85.0us p95=176.4us p99=281.1us p999=3615.7us",
+        "metrics_raw": {
+          "orders": 8235,
+          "fills": 492,
+          "elapsed_s": 44.89,
+          "throughput": 183.4,
+          "p50_us": 85.0,
+          "p95_us": 176.4,
+          "p99_us": 281.1,
+          "p999_us": 3615.7
+        }
+      },
+      {
+        "scenario": "stress",
+        "n_nodes": 4,
+        "trial": 2,
+        "elapsed_s": 55.2,
+        "metrics": "",
+        "metrics_raw": {}
+      },
+      {
+        "scenario": "stress",
+        "n_nodes": 4,
+        "trial": 3,
+        "elapsed_s": 56.2,
+        "metrics": "orders=8308 fills=435 throughput=184.9 orders/sec latency p50=83.2us p95=168.3us p99=193.4us p999=314.7us",
+        "metrics_raw": {
+          "orders": 8308,
+          "fills": 435,
+          "elapsed_s": 44.94,
+          "throughput": 184.9,
+          "p50_us": 83.2,
+          "p95_us": 168.3,
+          "p99_us": 193.4,
+          "p999_us": 314.7
+        }
+      },
+      {
+        "scenario": "stress",
+        "n_nodes": 4,
+        "trial": 4,
+        "elapsed_s": 54.8,
+        "metrics": "orders=8148 fills=326 throughput=181.2 orders/sec latency p50=78.7us p95=169.8us p99=759.5us p999=3049.1us",
+        "metrics_raw": {
+          "orders": 8148,
+          "fills": 326,
+          "elapsed_s": 44.97,
+          "throughput": 181.2,
+          "p50_us": 78.7,
+          "p95_us": 169.8,
+          "p99_us": 759.5,
+          "p999_us": 3049.1
+        }
+      },
+      {
+        "scenario": "stress",
+        "n_nodes": 4,
+        "trial": 5,
+        "elapsed_s": 55.4,
+        "metrics": "orders=7967 fills=325 throughput=177.2 orders/sec latency p50=82.0us p95=166.4us p99=195.9us p999=395.1us",
+        "metrics_raw": {
+          "orders": 7967,
+          "fills": 325,
+          "elapsed_s": 44.97,
+          "throughput": 177.2,
+          "p50_us": 82.0,
+          "p95_us": 166.4,
+          "p99_us": 195.9,
+          "p999_us": 395.1
+        }
+      }
+    ],
+    "8": [
+      {
+        "scenario": "stress",
+        "n_nodes": 8,
+        "trial": 1,
+        "elapsed_s": 59.3,
+        "metrics": "",
+        "metrics_raw": {}
+      },
+      {
+        "scenario": "stress",
+        "n_nodes": 8,
+        "trial": 2,
+        "elapsed_s": 59.4,
+        "metrics": "orders=9324 fills=837 throughput=207.1 orders/sec latency p50=86.5us p95=181.2us p99=1060.9us p999=10834.1us",
+        "metrics_raw": {
+          "orders": 9324,
+          "fills": 837,
+          "elapsed_s": 45.01,
+          "throughput": 207.1,
+          "p50_us": 86.5,
+          "p95_us": 181.2,
+          "p99_us": 1060.9,
+          "p999_us": 10834.1
+        }
+      },
+      {
+        "scenario": "stress",
+        "n_nodes": 8,
+        "trial": 3,
+        "elapsed_s": 59.3,
+        "metrics": "orders=11707 fills=634 throughput=260.3 orders/sec latency p50=88.2us p95=173.6us p99=373.1us p999=3085.9us",
+        "metrics_raw": {
+          "orders": 11707,
+          "fills": 634,
+          "elapsed_s": 44.97,
+          "throughput": 260.3,
+          "p50_us": 88.2,
+          "p95_us": 173.6,
+          "p99_us": 373.1,
+          "p999_us": 3085.9
+        }
+      },
+      {
+        "scenario": "stress",
+        "n_nodes": 8,
+        "trial": 4,
+        "elapsed_s": 59.5,
+        "metrics": "orders=5816 fills=778 throughput=128.8 orders/sec latency p50=92.1us p95=181.9us p99=1913.9us p999=4176.3us",
+        "metrics_raw": {
+          "orders": 5816,
+          "fills": 778,
+          "elapsed_s": 45.16,
+          "throughput": 128.8,
+          "p50_us": 92.1,
+          "p95_us": 181.9,
+          "p99_us": 1913.9,
+          "p999_us": 4176.3
+        }
+      },
+      {
+        "scenario": "stress",
+        "n_nodes": 8,
+        "trial": 5,
+        "elapsed_s": 59.2,
+        "metrics": "orders=8851 fills=660 throughput=196.8 orders/sec latency p50=90.3us p95=177.7us p99=1991.1us p999=68369.9us",
+        "metrics_raw": {
+          "orders": 8851,
+          "fills": 660,
+          "elapsed_s": 44.98,
+          "throughput": 196.8,
+          "p50_us": 90.3,
+          "p95_us": 177.7,
+          "p99_us": 1991.1,
+          "p999_us": 68369.9
+        }
+      }
+    ]
+  }
+}

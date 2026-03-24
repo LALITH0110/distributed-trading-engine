@@ -1,6 +1,16 @@
+# Credentials (FABRIC tokens, SSH keys)
+creds/
+
+# Virtual environment
+.venv/
+
+# Planning docs (internal)
 .planning/
 
-# Dataset cache — run scripts/fetch_datasets.py to populate
+# Claude Code config
+.claude/
+
+# Dataset cache
 data/
 data/*.csv
 
@@ -8,8 +18,20 @@ data/*.csv
 __pycache__/
 *.py[cod]
 *.egg-info/
-.venv/
 dist/
 build/
+.pytest_cache/
+
+# OS
 .DS_Store
-.claude/settings.local.json
+
+# Misc
+INTERVIEW_PREP.md
+cs451_assignment5_openmp.ipynb
+architecture-playground.html
+run_fabric.log
+
+# Duplicate results at root (canonical location is report/)
+/benchmark_results.json
+/fault_injection_results.json
+/results/

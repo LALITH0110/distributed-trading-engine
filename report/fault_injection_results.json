@@ -1,0 +1,42 @@
+{
+  "strat-0": {
+    "alive": false,
+    "expected": true,
+    "pass": false
+  },
+  "strat-1": {
+    "alive": false,
+    "expected": true,
+    "pass": false
+  },
+  "strat-2": {
+    "alive": false,
+    "expected": true,
+    "pass": false
+  },
+  "strat-3": {
+    "alive": false,
+    "expected": true,
+    "pass": false
+  },
+  "strat-4": {
+    "alive": false,
+    "expected": true,
+    "pass": false
+  },
+  "strat-5": {
+    "alive": false,
+    "expected": true,
+    "pass": false
+  },
+  "strat-6": {
+    "alive": false,
+    "expected": true,
+    "pass": false
+  },
+  "strat-7": {
+    "alive": false,
+    "expected": false,
+    "pass": true
+  }
+}
